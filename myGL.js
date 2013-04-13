@@ -1,22 +1,26 @@
+
 var camera, renderer, scene;
-var table;
-var eve;
-var preX, preY;
+
 var deltaMove = 0.03;
 var deltaAngle = 0.003;
 
-function onload2() {
-  initEvents();
-  initCRS();
+var nextPermit;
 
-  
+var bodies = [];
+
+function onload3() {
+	 initEvents();
+	 initCRS();
+	 initAjax(url);
+	 /*
+  return 0;
   var g = new THREE.CubeGeometry(100,70,1);
   //var m = new THREE.MeshBasicMaterial( { color: 0xFF0000 } );
 	var texture = THREE.ImageUtils.loadTexture('pic2.jpg');
 	var m = new THREE.MeshBasicMaterial({map: texture})
   table = new THREE.Mesh( g, m );
   
-  scene.add(table);
+  scene.add(table);*/
   /*
   //var geometry = new THREE.CubeGeometry(1,1,1);
   var geometry = new THREE.Geometry();
@@ -34,56 +38,68 @@ function onload2() {
   
   table.add( cube );
 */
-  camera.position.z = 120;
+  time = Date.now();
   render();
 }
 
-function render() {
-  redraw();
-  renderer.render(scene, camera);
-  requestAnimationFrame(render);
+
+function moveScene() {
+	 bodies[0].rotation.z -= dX * deltaAngle;
+	 bodies[0].rotation.x -= dY * deltaAngle;
+	 camera.position.z 	  -= dZ * deltaMove;
+	 dX = 0; dY = 0; dZ = 0;
 }
 
-function redraw() {
-  //table.position.y -= 0.01;
-  /*cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-  cube.rotation.z += 0.01;
-  
-  cube.position.x += 0.02;*/
-  //camera.translateZ(0.01);
+function moveBodies(time) {
+	 while(nextPermit[0] < time && STOP == false)
+		{
+		 doPermit();
+		 if(AjaxIsEnd())
+			 STOP = true;
+		 else
+			 nextPermit = AjaxGetNext();
+		}
 }
 
-function initEvents() {
-	 window.onmousedown = mouseDown;
-	 window.onmouseup = mouseUp;
-	 window.onmousewheel = mouseWheel;
+function doPermit() {
+	 var perm = nextPermit[1];
+	 for(var i = 0; i < perm.length; ++i)
+		{
+		 var elem = perm[i];
+		 if(elem.name)
+			{
+			 if(elem.name == "Box")
+				addBox(elem);
+			}
+			else
+			{
+			 var body = bodies[elem.id];
+			 if(elem.x)
+				body.position.x = elem.x;
+			 if(elem.y)
+				body.position.y = elem.y;
+			 if(elem.z)
+				body.position.z = elem.z;
+			 if(elem.yaw)
+				body.rotation.z = elem.yaw; // ТАК
+			 if(elem.pitch)
+				body.rotation.y = elem.pitch;
+			 if(elem.roll)
+				body.rotation.x = elem.roll;
+			}
+			//else if(elem.name == "")
+		}
 }
 
-function mouseDown(e) {
-	 window.onmousemove = mouseMove;
-	 preX = e.clientX;
-	 preY = e.clientY;
-}
-
-function mouseUp() {
-	 window.onmousemove = null;
-}
-
-function mouseWheel(e) {
-	 camera.position.z -= e.wheelDeltaY * deltaMove;
-}
-
-function mouseMove(e) {
-	 eve = event;
-	 var dX = preX - e.clientX;
-	 var dY = preY - e.clientY;
-	 
-	 preX -= dX;
-	 preY -= dY;
-	 
-	 table.rotation.x -= dY * deltaAngle;
-	 table.rotation.y -= dX * deltaAngle;
+function addBox(elem) {
+	 var geometry = new THREE.CubeGeometry(elem.xSize, elem.ySize, elem.zSize);
+	 var material = new THREE.MeshBasicMaterial( genColor() );
+	 body = new THREE.Mesh( geometry, material );
+	 body.position.x = elem.x;
+	 body.position.y = elem.y;
+	 body.position.z = elem.z;
+	 bodies[elem.id] = body;
+	 bodies[elem.parent].add(body);
 }
 
 function initCRS() {
@@ -96,4 +112,21 @@ function initCRS() {
 	 _parent.appendChild( renderer.domElement );
   
 	 scene = new THREE.Scene();
+	 
+	 camera.position.z = 444;
+	 var geometry = new THREE.CubeGeometry(0, 0, 0);
+	 var material = new THREE.MeshBasicMaterial( { color: 0x20ff50 } );
+	 bodies[0] = new THREE.Mesh( geometry, material );
+	 bodies[0].rotation.x = -1;
+	 bodies[0].rotation.z = -7;
+	 //bodies[0].rotation.y = 3.14/2;
+	 scene.add(bodies[0]);
+	 nextPermit = [-1, []];
+}
+
+var EEE = 0;
+var colors = [0x20ff50, 0xff2050, 0x2050ff, 0xe2e3e4];
+
+function genColor() {
+	return {color: colors[EEE++]};
 }
