@@ -1,18 +1,11 @@
-//(global)
-STOP = true;
-//(private)
-var _url = "./log.replay.json";
-var _start_time = 0;
-
-function onload() {
-	 STOP = true;
-	 initEvents();
-	 initCRS();
-	 initAjax(_url);
-	 
-	 waitLoad();
+function showReplay(div, url, replay) {
+	 ReplayLoader.load(url, replay);
+	 ReplayWindow.addScene(div);
+	 //ReplayWindow.addFPS(div);
+	 ReplayWindow.addEvents(div);
+	 ReplayWindow.start();
 }
-
+/*
 function render() {
 	 moveScene();
 	 var cTime = Date.now();
@@ -23,8 +16,7 @@ function render() {
 }
 
 function waitLoad() {
-	 console.log(STOP);
-	 if(STOP == false)
+	 if(ReplayLoader.isReady())
 		{
 		 _start_time = Date.now();
 		 render();
@@ -33,4 +25,4 @@ function waitLoad() {
 		{
 		 setTimeout(waitLoad, 100);
 		}
-}
+}*/
