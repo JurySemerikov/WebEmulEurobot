@@ -1,11 +1,26 @@
 <html>
 <head>
   <title>ThreeJS</title>
-  <link type="text/css" rel="stylesheet" href="./css.css" />
-  <script lang="text/javascript" src="./three.js"></script>
-  <script lang="text/javascript" src="./ReplayLoader.js"></script>
-  <script lang="text/javascript" src="./ReplayWindow.js"></script>
-  <script lang="text/javascript" src="./main.js"></script>
+  <style>
+	#FPS {
+		 position:	absolute;
+		 top:	0;
+		 right:	0;
+		 color:	green;
+	}
+	.noselect {
+		 -moz-user-select: -moz-none;
+		 -o-user-select: none;
+		 -khtml-user-select: none;
+		 -webkit-user-select: none;
+		 user-select: none;
+	}
+  </style>
+  <link type="text/css" rel="stylesheet" href="other/css.css" />
+  <script lang="text/javascript" src="script/three.js"></script>
+  <script lang="text/javascript" src="script/ReplayLoader.js"></script>
+  <script lang="text/javascript" src="script/ReplayWindow.js"></script>
+  <script lang="text/javascript" src="script/main.js"></script>
   <script lang="text/javascript">
 	 function onload() {
 		 var div = document.getElementById('scene');

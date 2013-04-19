@@ -1,3 +1,5 @@
+eee = true;
+
 ReplayWindow = {
 DELTA_MOVE:	0.03,	DELTA_ANGLE:0.003,
 camera:		null,	renderer:	null,	scene:	null,
@@ -23,21 +25,27 @@ start:		function() {
 render:		function() {
 	 var currentTime = Date.now();
 	 if(ReplayWindow.startTime == 0)
-		ReplayWindow.startTime = currentTime;
+		{
+		 ReplayWindow.startTime = currentTime;
+		 ReplayWindow.FPSTime = currentTime;
+		}
 	 var time = currentTime - ReplayWindow.startTime;
-	 
 	 ReplayWindow.doMove();
 	 if(ReplayWindow.isEnd == false)
 		ReplayWindow.doPermit(time);
-		
+	 ReplayWindow.doFPS(currentTime);
 	 ReplayWindow.renderer.render(ReplayWindow.scene, ReplayWindow.camera);
 	 requestAnimationFrame(ReplayWindow.render);
 
 },
 doMove:		function() {
 	 ReplayWindow.bodies[0].rotation.z	-= ReplayWindow.dX * ReplayWindow.DELTA_ANGLE;
-	 ReplayWindow.bodies[0].rotation.x	-= ReplayWindow.dY * ReplayWindow.DELTA_ANGLE;
-	 ReplayWindow.camera.position.z 	-= ReplayWindow.dZ * ReplayWindow.DELTA_MOVE;
+	 var x = ReplayWindow.bodies[0].rotation.x - ReplayWindow.dY * ReplayWindow.DELTA_ANGLE;
+	 if(x>0)x=0;else if(x<-1.5)x=-1.5;
+	 ReplayWindow.bodies[0].rotation.x = x;
+	 var z = ReplayWindow.camera.position.z - ReplayWindow.dZ * ReplayWindow.DELTA_MOVE;
+	 if(z<50)z=50;else if(z>500)z=500;
+	 ReplayWindow.camera.position.z = z;
 	 ReplayWindow.dX = 0;
 	 ReplayWindow.dY = 0;
 	 ReplayWindow.dZ = 0;
@@ -65,10 +73,12 @@ process:	function(elem) {
 			 body = ReplayWindow.addBox(elem);		break;
 		 case "Cylinder":
 			 body = ReplayWindow.addCylinder(elem);		break;
+		 case "Ball":
+			 body = ReplayWindow.addBall(elem);		break;
 		 default:
 			 body = ReplayWindow.addBody(elem);
 		}
-
+		
 	 if(elem.x)
 		 body.position.x = elem.x;
 	 if(elem.y)
@@ -76,16 +86,23 @@ process:	function(elem) {
 	 if(elem.z)
 		 body.position.z = elem.z;
 
-	 if(elem.yaw)
-		 body.rotation.z = elem.yaw;
-	 if(elem.pitch)
-		 body.rotation.y = elem.pitch;
-	 if(elem.roll)
-		 body.rotation.x = elem.roll;
+	 if(elem.Z)
+		 body.rotation.z = parseFloat(elem.Z);
+	 if(elem.Y)
+		 body.rotation.y = parseFloat(elem.Y);
+	 if(elem.X)
+		 body.rotation.x = parseFloat(elem.X);
 },
 addBox:		function(elem) {
 	 var geometry = new THREE.CubeGeometry(elem.xSize, elem.ySize, elem.zSize);
-	 var material = new THREE.MeshBasicMaterial( {color: elem.color} );
+	 var material;
+	 if(elem.texture)
+		{
+		 var texture = THREE.ImageUtils.loadTexture( 'other/' + elem.texture );
+		 material = new THREE.MeshBasicMaterial( {color: elem.color, map: texture} );
+		}
+	 else
+		 material = new THREE.MeshBasicMaterial( {color: elem.color} );
 	 var body = new THREE.Mesh( geometry, material );
 	 ReplayWindow.bodies[elem.id] = body;
 	 ReplayWindow.bodies[elem.parent].add(body);
@@ -99,6 +116,14 @@ addCylinder:function(elem) {
 	 ReplayWindow.bodies[elem.parent].add(body);
 	 return body;
 },
+addBall:	function(elem) {
+	 var geometry = new THREE.SphereGeometry(elem.radius, 10 * elem.radius, 10 * elem.radius);
+	 var material = new THREE.MeshBasicMaterial( {color: elem.color} );
+	 var body = new THREE.Mesh( geometry, material );
+	 ReplayWindow.bodies[elem.id] = body;
+	 ReplayWindow.bodies[elem.parent].add(body);
+	 return body;
+},
 addBody:	function(elem) {
 	 console.log('Unknown body: ' + elem.name);
 	 var body = new THREE.Object3D();
@@ -106,7 +131,18 @@ addBody:	function(elem) {
 	 ReplayWindow.bodies[elem.parent].add(body);
 	 return body;
 },
+doFPS:		function(time) {
+	 var dt = time - ReplayWindow.FPSTime;
+	 ++ReplayWindow.FPSCounter;
 
+	 if(dt > 166)
+		{
+		 if(ReplayWindow.FPS)
+			 ReplayWindow.FPS.innerText = Math.round( 1000 * ReplayWindow.FPSCounter /  dt);
+		 ReplayWindow.FPSTime += dt;
+		 ReplayWindow.FPSCounter = 0;
+		}
+},
 addScene:	function(div) {	 
 	 var camera = new THREE.PerspectiveCamera(75, div.clientWidth/div.clientHeight, 0.1, 1000);
 
@@ -129,14 +165,12 @@ addScene:	function(div) {
 	 ReplayWindow.camera = camera;
 	 ReplayWindow.renderer = renderer;
 	 ReplayWindow.scene = scene;
+	 div.className += "noselect";
 },
 
 addFPS:		function(div) {
 	 var span = document.createElement('span');
-	 span.style.position = 'absolute';
-	 span.style.top = '0px';
-	 span.style.right = '0px';
-	 span.style.color = 'green';
+	 span.id = 'FPS';
 	 span.innerText = '0';
 	 div.appendChild(span);
 	 ReplayWindow.FPS = span;
@@ -159,7 +193,7 @@ mouseDown:	function(e) {
 	 window.onmousemove = ReplayWindow.mouseMove;
 },
 mouseWheel:	function(e) {
-	 //TODO + firefox
+	 ReplayWindow.dZ += e.wheelDeltaY;
 },
 mouseUp:	function(e) {
 	 window.onmouseup = null;
