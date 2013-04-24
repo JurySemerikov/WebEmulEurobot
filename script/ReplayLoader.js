@@ -1,5 +1,5 @@
 ReplayLoader = {
-dt:		0,	size:	0,	pos:	0,
+dt:		0,	size:	0,	pos:	0,	startTime:	0,
 data:	[],	types: ["Body", "Ball", "Box", "Cylinder"],
 order:	["x", "y", "z", "Z", "Y", "X", "parent", "color"],
 typesOrder: [[], ["radius"], ["xSize", "ySize", "zSize", "texture"], ["rTop", "rBottom", "height"]],
@@ -8,8 +8,11 @@ ready:	false,
 load:	function(url, replay) {
 	 var req = ReplayLoader.getXmlHttp();
 	 req.onreadystatechange = ReplayLoader.stateChange;
-	 req.open("POST", url, true);
-	 req.send("replay=" + replay);
+	 req.open("GET", url, true);
+	 req.send(null);
+},
+setStartTime:	function(time) {
+	 ReplayLoader.startTime = Math.round( time*1000 );
 },
 
 isReady:	function() { 
@@ -18,7 +21,7 @@ isReady:	function() {
 
 getNext:	function() {
 	 var pos = ReplayLoader.pos++;
-	 var time = Math.round( (pos-1)*ReplayLoader.dt*1000 );
+	 var time = Math.round( (pos-1)*ReplayLoader.dt ) - ReplayLoader.startTime;
 
 	 var array = ReplayLoader.data[pos].map(ReplayLoader.convert);
 	 
@@ -69,7 +72,7 @@ stateChange: function(e) {
 	 if(e.target.readyState == 4 && e.target.status == 200)
 		{
 		 ReplayLoader.data = JSON.parse(e.target.responseText);
-		 ReplayLoader.dt = ReplayLoader.data[ReplayLoader.pos++];
+		 ReplayLoader.dt = ReplayLoader.data[ReplayLoader.pos++] * 1000;
 		 ReplayLoader.size = ReplayLoader.data.length;
 		 ReplayLoader.ready = true;
 		}

@@ -68,7 +68,7 @@ process:	function(elem) {
 	 switch(elem.name)
 		{
 		 case undefined:
-			 body = ReplayWindow.bodies[elem.id];	break;
+			 body = ReplayWindow.bodies[1*elem.id];	break;
 		 case "Box":
 			 body = ReplayWindow.addBox(elem);		break;
 		 case "Cylinder":
@@ -80,11 +80,11 @@ process:	function(elem) {
 		}
 		
 	 if(elem.x)
-		 body.position.x = elem.x;
+		 body.position.x = parseFloat(elem.x);
 	 if(elem.y)
-		 body.position.y = elem.y;
+		 body.position.y = parseFloat(elem.y);
 	 if(elem.z)
-		 body.position.z = elem.z;
+		 body.position.z = parseFloat(elem.z);
 
 	 if(elem.Z)
 		 body.rotation.z = parseFloat(elem.Z);
@@ -94,41 +94,43 @@ process:	function(elem) {
 		 body.rotation.x = parseFloat(elem.X);
 },
 addBox:		function(elem) {
-	 var geometry = new THREE.CubeGeometry(elem.xSize, elem.ySize, elem.zSize);
+	 var geometry = new THREE.CubeGeometry(1*elem.xSize, 1*elem.ySize, 1*elem.zSize);
 	 var material;
 	 if(elem.texture)
 		{
 		 var texture = THREE.ImageUtils.loadTexture( 'other/' + elem.texture );
-		 material = new THREE.MeshBasicMaterial( {color: elem.color, map: texture} );
+		 material = new THREE.MeshPhongMaterial( {color: elem.color, map: texture} );
 		}
 	 else
-		 material = new THREE.MeshBasicMaterial( {color: elem.color} );
+		 material = new THREE.MeshPhongMaterial( {color: elem.color} );
 	 var body = new THREE.Mesh( geometry, material );
-	 ReplayWindow.bodies[elem.id] = body;
-	 ReplayWindow.bodies[elem.parent].add(body);
+	 ReplayWindow.bodies[1*elem.id] = body;
+	 ReplayWindow.bodies[1*elem.parent].add(body);
 	 return body;
 },
 addCylinder:function(elem) {
-	 var geometry = new THREE.CylinderGeometry(elem.rTop, elem.rBottom, elem.height);
-	 var material = new THREE.MeshBasicMaterial( {color: elem.color} );
+	 var radiusSegments = 5*elem.rTop + 5*elem.rBottom;
+	 var geometry = new THREE.CylinderGeometry(1*elem.rTop, 1*elem.rBottom, 1*elem.height, radiusSegments);
+	 var material = new THREE.MeshPhongMaterial( {color: elem.color} );
 	 var body = new THREE.Mesh( geometry, material );
-	 ReplayWindow.bodies[elem.id] = body;
-	 ReplayWindow.bodies[elem.parent].add(body);
+	 ReplayWindow.bodies[1*elem.id] = body;
+	 ReplayWindow.bodies[1*elem.parent].add(body);
 	 return body;
 },
 addBall:	function(elem) {
-	 var geometry = new THREE.SphereGeometry(elem.radius, 10 * elem.radius, 10 * elem.radius);
-	 var material = new THREE.MeshBasicMaterial( {color: elem.color} );
+	 var geometry = new THREE.SphereGeometry(1*elem.radius);
+	 var material = new THREE.MeshPhongMaterial( {color: elem.color} );
 	 var body = new THREE.Mesh( geometry, material );
-	 ReplayWindow.bodies[elem.id] = body;
-	 ReplayWindow.bodies[elem.parent].add(body);
+	 ReplayWindow.bodies[1*elem.id] = body;
+	 ReplayWindow.bodies[1*elem.parent].add(body);
 	 return body;
 },
 addBody:	function(elem) {
 	 console.log('Unknown body: ' + elem.name);
+	 console.log(elem);
 	 var body = new THREE.Object3D();
-	 ReplayWindow.bodies[elem.id] = body;
-	 ReplayWindow.bodies[elem.parent].add(body);
+	 ReplayWindow.bodies[1*elem.id] = body;
+	 ReplayWindow.bodies[1*elem.parent].add(body);
 	 return body;
 },
 doFPS:		function(time) {
@@ -143,29 +145,31 @@ doFPS:		function(time) {
 		 ReplayWindow.FPSCounter = 0;
 		}
 },
-addScene:	function(div) {	 
+addScene:	function(div) {
 	 var camera = new THREE.PerspectiveCamera(75, div.clientWidth/div.clientHeight, 0.1, 1000);
-
-	 var renderer = new THREE.WebGLRenderer();
-	 renderer.setSize( div.clientWidth, div.clientHeight );
-	 div.appendChild( renderer.domElement );
-  
+	 var renderer = new THREE.WebGLRenderer({ antialias: true });
 	 var scene = new THREE.Scene();
-	 
-	 camera.position.z = 150;
-	 
+	 var light1 = new THREE.PointLight( 0xffffff, 1.5, 1000 );
+	 var light2 = new THREE.PointLight( 0xffffff, 1.5, 1000 );
 	 var rootBody = new THREE.Object3D();
 	 
+	 renderer.setSize( div.clientWidth, div.clientHeight );
+	 scene.add(rootBody);
+	 light1.position.set( 0,-300, 300 );
+	 light2.position.set( 0, 300, 300 );
+	 scene.add( light1 );
+	 scene.add( light2 );
 	 
 	 ReplayWindow.bodies[0] = rootBody;
+	 camera.position.z = 200;
 	 rootBody.rotation.x = -1;
-	 rootBody.rotation.z = -7;
-	 scene.add(rootBody);
-	 
+	 rootBody.rotation.z = -1;
+
 	 ReplayWindow.camera = camera;
 	 ReplayWindow.renderer = renderer;
 	 ReplayWindow.scene = scene;
-	 div.className += "noselect";
+	 
+	 div.appendChild( renderer.domElement );
 },
 
 addFPS:		function(div) {
@@ -182,7 +186,8 @@ removeFPS:	function() {
 
 addEvents:	function(div) {
 	 div.onmousedown = ReplayWindow.mouseDown;
-	 div.onmousewheel = ReplayWindow.mouseWheel;
+	 div.onmousewheel = ReplayWindow.mouseWheel; // chrome
+	 div.addEventListener('DOMMouseScroll', ReplayWindow.mouseWheel); // firefox
 },
 mouseDown:	function(e) {
 	 ReplayWindow.dX = 0;
@@ -193,7 +198,10 @@ mouseDown:	function(e) {
 	 window.onmousemove = ReplayWindow.mouseMove;
 },
 mouseWheel:	function(e) {
-	 ReplayWindow.dZ += e.wheelDeltaY;
+	 if(e.detail) // firefox
+		ReplayWindow.dZ -= e.detail * 40;
+	 else if(e.wheelDeltaY) // chrome
+		ReplayWindow.dZ += e.wheelDeltaY;
 },
 mouseUp:	function(e) {
 	 window.onmouseup = null;
