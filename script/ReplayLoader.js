@@ -1,5 +1,5 @@
 ReplayLoader = {
-dt:		0,	size:	0,	pos:	0,	startTime:	0,
+dt:		0,	size:	0,	pos:	0,	delayTime:	0,
 data:	[],	types: ["Body", "Ball", "Box", "Cylinder"],
 order:	["x", "y", "z", "Z", "Y", "X", "parent", "color"],
 typesOrder: [[], ["radius"], ["xSize", "ySize", "zSize", "texture"], ["rTop", "rBottom", "height"]],
@@ -11,8 +11,8 @@ load:	function(url, replay) {
 	 req.open("GET", url, true);
 	 req.send(null);
 },
-setStartTime:	function(time) {
-	 ReplayLoader.startTime = Math.round( time*1000 );
+setDelayTime:	function(time) {
+	 ReplayLoader.delayTime = Math.round( time*1000 );
 },
 
 isReady:	function() { 
@@ -21,7 +21,7 @@ isReady:	function() {
 
 getNext:	function() {
 	 var pos = ReplayLoader.pos++;
-	 var time = Math.round( (pos-1)*ReplayLoader.dt ) - ReplayLoader.startTime;
+	 var time = Math.round( (pos-1)*ReplayLoader.dt ) - ReplayLoader.delayTime;
 
 	 var array = ReplayLoader.data[pos].map(ReplayLoader.convert);
 	 

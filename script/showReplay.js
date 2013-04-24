@@ -1,7 +1,7 @@
-function showReplay(div, url, startTime) {
+function showReplay(div, url, delayTime) {
 	 ReplayLoader.load(url);
-	 if(startTime)
-		ReplayLoader.setStartTime(startTime);
+	 if(delayTime)
+		ReplayLoader.setDelayTime(delayTime);
 	 
 	 ReplayWindow.addScene(div);
 	 ReplayWindow.addFPS(div);
