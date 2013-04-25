@@ -1,5 +1,3 @@
-eee = true;
-
 ReplayWindow = {
 DELTA_MOVE:	0.03,	DELTA_ANGLE:0.003,
 camera:		null,	renderer:	null,	scene:	null,
@@ -202,6 +200,7 @@ mouseWheel:	function(e) {
 		ReplayWindow.dZ -= e.detail * 40;
 	 else if(e.wheelDeltaY) // chrome
 		ReplayWindow.dZ += e.wheelDeltaY;
+	 e.preventDefault();
 },
 mouseUp:	function(e) {
 	 window.onmouseup = null;
