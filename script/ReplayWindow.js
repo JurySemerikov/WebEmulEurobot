@@ -153,15 +153,15 @@ addScene:	function(div) {
 	 
 	 renderer.setSize( div.clientWidth, div.clientHeight );
 	 scene.add(rootBody);
-	 light1.position.set( 0,-300, 300 );
-	 light2.position.set( 0, 300, 300 );
+	 light1.position.set(0,-300, 300 );
+	 light2.position.set(0, 300, 300 );
 	 scene.add( light1 );
 	 scene.add( light2 );
 	 
 	 ReplayWindow.bodies[0] = rootBody;
-	 camera.position.z = 200;
-	 rootBody.rotation.x = -1;
-	 rootBody.rotation.z = -1;
+	 camera.position.z = 100;
+	 rootBody.rotation.x = -1.3;
+	 rootBody.rotation.z = -0.5;
 
 	 ReplayWindow.camera = camera;
 	 ReplayWindow.renderer = renderer;

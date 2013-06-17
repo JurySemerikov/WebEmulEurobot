@@ -10,6 +10,10 @@ load:	function(url, replay) {
 	 req.onreadystatechange = ReplayLoader.stateChange;
 	 req.open("GET", url, true);
 	 req.send(null);
+	 //ReplayLoader.data = [["0,1,0,0,0,0,0,0,0,#FFFFFF","-3,2,45,60,0,0,0,1.570796326794896619,0,#5500BB,35,35,150","-3,3,0,0,0,0,0,1.570796326794896619,1,#55BBBB,35,35,150"]];
+	 //ReplayLoader.size = ReplayLoader.data.length;
+	 //ReplayLoader.dt = 0.016666666666666666;
+	 //ReplayLoader.ready=true;
 },
 setDelayTime:	function(time) {
 	 ReplayLoader.delayTime = Math.round( time*1000 );
